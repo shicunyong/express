@@ -10,7 +10,7 @@ router.all('/', function (req, res, next) {
 });
 // 该路由使用的中间件
 router.use(function timeLog(req, res, next) {
-    console.log('Time: ', Date.now());
+    // console.log('Time: ', Date.now());
     next();
 });
 /* GET home page. */
@@ -25,81 +25,50 @@ router.get('/app/obj/query', function (req, res, next) {
             return next(err);
         } else {
             var params = url.parse(req.url, true).query;
-            conn.query('select * from websites', [], function (err, result) {
+            let str = mysql.searchData(params);
+            conn.query(str, [], function (err, result) {
                 if (err) {
                     return next(err);
                 } else {
-                    // console.log(result, 'result');
                     res.send({ data: result });
-                    // res.render('user', { info: result });
                 }
             });
-
-            // conn.query('select * from websites', [], function (err, result) {
-            //     if (err) {
-            //         return next(err);
-            //     } else {
-            //         // console.log(result, 'result');
-            //         res.send({ data: result });
-            //         // res.render('user', { info: result });
-            //     }
-            // });
         }
     });
 });
 
-// router.post('/add', function (req, res, next) {
-//     var json = req.body;
-//     var insert = 'INSERT INTO userInfo(name,age) VALUES ("' + json.username + '",' + json.age + ')';
-//     req.getConnection(function (err, conn) {
-//         if (err) {
-//             return next(err);
-//         } else {
-//             conn.query(insert, [], function (err, result) {
-//                 if (err) {
-//                     return next(err);
-//                 } else {
-//                     res.send(200, { c: 200 });
-//                 }
-//             });
-//         }
-//     });
-// });
-// router.get('/delete', function (req, res, next) {
-//     console.log(req);
-//     var json = req.query.id;
-//     var del = 'delete from userInfo where id=' + json;
-//     req.getConnection(function (err, conn) {
-//         if (err) {
-//             return next(err);
-//         } else {
-//             conn.query(del, [], function (err, result) {
-//                 if (err) {
-//                     return next(err);
-//                 } else {
-//                     res.send(200, { c: 200 });
-//                 }
-//             });
-//         }
-//     });
-// });
-// router.post('/edi', function (req, res, next) {
-//     console.log(req.body);
-//     var json = req.body;
-//     var del = 'update userInfo set name="' + json.username + '",age=' + json.age + ' where id=' + json.id;
-//     req.getConnection(function (err, conn) {
-//         if (err) {
-//             return next(err);
-//         } else {
-//             conn.query(del, [], function (err, result) {
-//                 if (err) {
-//                     return next(err);
-//                 } else {
-//                     res.send(200, { c: 200 });
-//                 }
-//             });
-//         }
-//     });
-// });
+router.post('/app/obj/update', function (req, res, next) {
+    req.getConnection(function (err, conn) {
+        if (err) {
+            return next(err);
+        } else {
+            let fn = req.body.id ? mysql.updateData : mysql.insertData;
+            let str = fn(req.body);
+            conn.query(str, [], function (err, result) {
+                if (err) {
+                    return next(err);
+                } else {
+                    res.send(200, { success: true });
+                }
+            });
+        }
+    });
+});
+router.get('/app/obj/del', function (req, res, next) {
+    req.getConnection(function (err, conn) {
+        if (err) {
+            return next(err);
+        } else {
+            conn.query(mysql.deleteData(req.query), [], function (err, result) {
+                if (err) {
+                    return next(err);
+                } else {
+                    res.send(200, { success: true });
+                }
+            });
+        }
+    });
+});
+
 
 module.exports = router;
